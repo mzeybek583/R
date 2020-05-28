@@ -7,14 +7,22 @@ library(raster)
 library(sp)
 library(rasterVis)
 
-set.seed(4208)
+# Working directory
+setwd("C:/Users/LENOVO-7/Desktop/")
 
-z <- rnorm(10, mean=100, sd=40)
+# #Generate random data
+# set.seed(4208)
+# 
+# z <- rnorm(10, mean=100, sd=40)
+# 
+# x <- rnorm(10, mean = 455100, sd= 50)
+# 
+# y <- rnorm(10, mean = 4452200, sd = 50)
 
-x <- rnorm(10, mean = 455100, sd= 50)
-
-y <- rnorm(10, mean = 4452200, sd = 50)
-
+veri <- read.csv(file = "veri.dat", header = TRUE, sep = ",")
+  x <- veri$V1
+  y <- veri$V2
+  z <- veri$V3
 plot(x, y)
 
 text(x, y, format(round(z,2), nsmall=2), cex=1.5, pos=3,col="red")
@@ -48,7 +56,7 @@ library(gstat) # IDW fonksiyonu
 P.idw <- gstat::idw(z~1, data, newdata=grd, idp=2.0)
 
 r <- raster(P.idw)
-
+crs(r) <- "+init=EPSG:5258"
 
 
 plot(r, col= terrain.colors(100),
@@ -69,4 +77,10 @@ text(x, y, format(round(z,2), nsmall=2), cex=0.75, pos=3,col="red")
 # contourplot(r, add =TRUE, margin=FALSE, pretty=TRUE)
 # 
 
+writeRaster(r,"elev.tif")
+
+# write.csv(cbind(format(round(x,3),nsmall=3),
+#                 format(round(y,3),nsmall=3),
+#                 format(round(z,3),nsmall=3)), quote = FALSE,
+#           "veri.dat")
 
