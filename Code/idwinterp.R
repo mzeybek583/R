@@ -6,6 +6,7 @@
 library(raster)
 library(sp)
 library(rasterVis)
+library(gstat) # IDW fonksiyonu
 
 # Working directory
 setwd("C:/Users/LENOVO-7/Desktop/")
@@ -50,7 +51,6 @@ gridded(grd) <- TRUE
 plot(grd, cex = 1.5, col = "grey")
 plot(data, pch = 15, col = "red", cex = 1,add = TRUE)
 
-library(gstat) # IDW fonksiyonu
 # Veriyi enterpole et
 # 2. mertebeden
 P.idw <- gstat::idw(z~1, data, newdata=grd, idp=2.0)
