@@ -1,5 +1,6 @@
 ## Normalization
-
+## Programmer: Assist. Prof. Dr. Mustafa Zeybek
+# Artvin Coruh University
 
 set.seed(4208)
 
