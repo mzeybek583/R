@@ -4,7 +4,7 @@
 set.seed(4208)
 
 #Generate random numbers
-df <- rnorm(10, mean = 40000, sd=2000)
+df <- rnorm(50, mean = 40000, sd=2000)
 df
 hist(df) # plot data
 
