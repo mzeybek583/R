@@ -27,13 +27,13 @@ delta <- veri$N2-veri$N1
 delta_x <- delta[2]
 delta_y <- delta[1]
 if ((delta_x)>0 & (delta_y)>0) {
-  semt<- atan((delta_x)/(delta_y))*200/pi   
+  semt<- atan((delta_x)/(delta_y))*ro   
 } else if ((delta_x)>0 & (delta_y)<0){
-  semt<- atan((delta_x)/(delta_y))*200/pi+200   
+  semt<- atan((delta_x)/(delta_y))*ro + 200   
 } else if ((delta_x)<0 & (delta_y)<0) {
-  semt<- atan((delta_x)/(delta_y))*200/pi+200   
+  semt<- atan((delta_x)/(delta_y)) * ro + 200   
 } else {
-  semt<- atan((delta_x)/(delta_y))*200/pi+400
+  semt<- atan((delta_x)/(delta_y)) * ro + 400
 }
 
 N1N2.dist <- sqrt(delta_x^2 + delta_y^2)
