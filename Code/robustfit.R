@@ -45,3 +45,8 @@
          pch=c(NA,NA,8),
          cex = 1.25  )
   dev.off()
+
+#Results
+# https://github.com/mzeybek583/R/blob/master/Code/Data/plot1.tex
+# https://github.com/mzeybek583/R/blob/master/Code/Data/plot2.tex
+# https://github.com/mzeybek583/R/blob/master/Code/images/robustfit.pdf
