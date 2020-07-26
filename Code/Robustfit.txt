@@ -1,6 +1,9 @@
-Genellikle bir veri kümesinin, önemli ölçüde aykırı değerler veya veri kümemizdeki 
-diğer gözlemlerin çoğundan önemli ölçüde kapsam dışı olan gözlemler içermesi söz konusudur. 
-Bu sorunla başa çıkmak için sağlam regresyonları nasıl kullanabileceğimizi görelim. 
-Grafikler Aykırı değerlerle başa çıkmanın yararlı bir yolu, güçlü bir gerileme veya 
-aykırı değerlerden kaynaklanan çarpıklığı azaltmak için her bir gözleme atanan ağırlıkları 
-ayarlayan bir gerilemedir.
+Lineer modele ait verilerin genellikle, önemli ölçüde sistemsel veya farklı etkiler altında 
+aykırı (uyuşumsuz veya gürültülü) değerler veya veri kümemizdeki diğer gözlemlerin çoğundan 
+önemli ölçüde farklı dağılımdan gelen gözlemler içermesi söz konusu olabilir.
+
+Bu sorunla başa çıkmak için robust regresyonlar en yaygın kullanılan çözüm önerileri arasındadır.
+
+Öncelikler verilerin grafikler yardımıyla incelenmesinde fayda vardır. Böylece, aykırı değerlerle 
+başa çıkmanın yararlı bir yolu olabilir. Robust regresyon ile aykırı değerlerden kaynaklanan 
+çarpıklığı azaltmak için her bir gözleme atanan ağırlıklar ayarlanarak model sağlamlaştırılır.
