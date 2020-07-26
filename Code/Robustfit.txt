@@ -1,0 +1,6 @@
+Genellikle bir veri kümesinin, önemli ölçüde aykırı değerler veya veri kümemizdeki 
+diğer gözlemlerin çoğundan önemli ölçüde kapsam dışı olan gözlemler içermesi söz konusudur. 
+Bu sorunla başa çıkmak için sağlam regresyonları nasıl kullanabileceğimizi görelim. 
+Grafikler Aykırı değerlerle başa çıkmanın yararlı bir yolu, güçlü bir gerileme veya 
+aykırı değerlerden kaynaklanan çarpıklığı azaltmak için her bir gözleme atanan ağırlıkları 
+ayarlayan bir gerilemedir.
