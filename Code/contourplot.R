@@ -8,7 +8,7 @@ library(raster)
 library(rasterVis)
 
 # kotlar uretiliyor
-
+set.seed(4208)
 z <- rnorm(36, mean = 100, sd =0.1)
 hist(z)
 
