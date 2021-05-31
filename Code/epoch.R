@@ -72,8 +72,8 @@ out <- t(out)
 X.new <- out[,1]
 Y.new <- out[,2]
 
-plot(X.new[t.diff], Y.new[t.diff])
+plot(X.new[t.diff], Y.new[t.diff], ylim = c(min(Y.new),max(Y.new)+0.1))
 arrows(X.new[t.diff], Y.new[t.diff], X.new[t.diff+1], Y.new[t.diff+1], col = "red")
-text(X.new,Y.new+0.005, labels=t.diff, cex=0.9, font=2)
+text(X.new,Y.new+0.009, labels=t.diff, cex=0.9, font=2)
 
 
