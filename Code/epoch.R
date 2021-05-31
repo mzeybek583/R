@@ -59,3 +59,21 @@ fit$coefficients[1,1] + fit$coefficients[2,1]*yp + fit$coefficients[3,1]*xp
 fit$coefficients[1,2] + fit$coefficients[2,2]*yp + fit$coefficients[3,2]*xp
 fit$coefficients[1,3] + fit$coefficients[2,3]*yp + fit$coefficients[3,3]*xp
 
+## Plot
+# 10 yıllık
+t.diff <- seq(1:10)
+
+f1 <- function(x) xyz.t0 + x*v.xyz
+
+out <-sapply(t.diff,f1)
+
+out <- t(out)
+#out <- data.frame(out)
+X.new <- out[,1]
+Y.new <- out[,2]
+
+plot(X.new[t.diff], Y.new[t.diff])
+arrows(X.new[t.diff], Y.new[t.diff], X.new[t.diff+1], Y.new[t.diff+1], col = "red")
+text(X.new,Y.new+0.005, labels=t.diff, cex=0.9, font=2)
+
+
