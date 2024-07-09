@@ -11,6 +11,8 @@ ID <- raw$ID
 Lat <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Latitude)))
 Long <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Longitude)))
 Z <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Elevation)))
+Antenna<- 1.8
+Z <- Z - Antenna
 
 # Combine longitude and latitude into a matrix
 lonlat <- cbind(Long, Lat)
@@ -34,6 +36,9 @@ newcrs <- "epsg:5255"
 # Project the points to the new coordinate reference system
 p_projected <- terra::project(pts, newcrs)
 
+output <- data.frame(geom(p_projected))
+export <- cbind(output[,c(1,3,4)],Z)
+
 # Plot the projected points
 plot(p_projected)
 
@@ -43,3 +48,4 @@ print(geom(p_projected))
 # Write the projected points to a shapefile
 outfile <- "shp_out.shp"
 writeVector(p_projected, outfile, overwrite = TRUE)
+write.table(export,"coordinates.csv", sep = ";", row.names = FALSE)
