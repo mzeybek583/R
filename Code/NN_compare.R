@@ -2,7 +2,9 @@
 # Finding Nearest Point and Compare Distance
 
 # Load Libs
-library(FNN)    
+library(FNN)   
+library(ggpubr)
+library("car")
 
 # Read Test Data
 H_RTK <- read.csv("coordinates.csv", sep = ";")
@@ -34,12 +36,42 @@ results <- cbind(results, dx,dy,dz)
 hist(dx)
 hist(dy)
 hist(dz)
-mean(dx)
-mean(dy)
-mean(dz)
-sd(dx)
-sd(dy)
-sd(dz)
+m_dx <- mean(dx)
+m_dy <- mean(dy)
+m_dz <- mean(dz)
+sd_dx <- sd(dx)
+sd_dy <- sd(dy)
+sd_dz <- sd(dz)
+dnormx <- dnorm(dx, mean = m_dx, sd = sd_dx)
+dnormy <- dnorm(dy, mean = m_dy, sd = sd_dy)
+dnormz <- dnorm(dz, mean = m_dz, sd = sd_dz)
+
+plot(dx, dnormx)
+plot(dy, dnormy)
+plot(dz, dnormz)
+
+
+ggdensity(dx, 
+          main = "Density plot of X",
+          xlab = "X")
+ggdensity(dy, 
+          main = "Density plot of Y",
+          xlab = "Y")
+ggdensity(dz, 
+          main = "Density plot of Z",
+          xlab = "Z")
+
+ggqqplot(dx)
+ggqqplot(dy)
+ggqqplot(dz)
+
+qqPlot(dx)
+qqPlot(dy)
+qqPlot(dz)
+
+shapiro.test(dx)
+shapiro.test(dy)
+shapiro.test(dz)
 
 
 plot(H_RTK$x, H_RTK$y, col="green")
