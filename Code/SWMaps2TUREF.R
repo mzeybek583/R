@@ -1,3 +1,5 @@
+
+
 ### Read SWMaps CSV file and convert to TUREF
 
 # Load required library
@@ -13,6 +15,9 @@ Long <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Longitude)))
 Z <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Elevation)))
 Antenna<- 1.8
 Z <- Z - Antenna
+Lat_acc <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Horizontal.Accuracy)))
+Lon_acc <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Horizontal.Accuracy)))
+Z_acc <- as.numeric(gsub(",", ".", gsub("\\.", "", raw$Vertical.Accuracy)))
 
 # Combine longitude and latitude into a matrix
 lonlat <- cbind(Long, Lat)
@@ -25,7 +30,7 @@ pts <- vect(lonlat, crs = crdref)
 print(crs(pts))
 
 # Create a data frame with ID and Elevation
-att <- data.frame(ID = ID, Z = Z)
+att <- data.frame(ID = ID, Z = Z, X_Acc= Lon_acc, Y_Acc= Lat_acc, Z_Acc= Z_acc)
 
 # Add attributes to the points vector
 pts <- vect(lonlat, atts = att, crs = crdref)
@@ -37,7 +42,7 @@ newcrs <- "epsg:5255"
 p_projected <- terra::project(pts, newcrs)
 
 output <- data.frame(geom(p_projected))
-export <- cbind(output[,c(1,3,4)],Z)
+export <- cbind(output[,c(1,3,4)],Z, Lat_acc, Lon_acc, Z_acc)
 
 # Plot the projected points
 plot(p_projected)
