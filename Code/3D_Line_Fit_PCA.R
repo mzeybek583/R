@@ -2,6 +2,10 @@
 ## 3D line fitting with PCA
 
 # Reference : https://stackoverflow.com/questions/39915328/fit-a-line-to-3d-point-cloud-in-r/39917318
+if (!require("scatterplot3d")) install.packages("scatterplot3d", dependencies = TRUE)
+if (!require("pdist")) install.packages("pdist", dependencies = TRUE)
+if (!require("rgl")) install.packages("rgl", dependencies = TRUE)
+
 ### Load Libs.
 library(scatterplot3d) 
 library(pdist)
@@ -46,7 +50,7 @@ out <- data.frame(matrix(rep(0,N), ncol = 1))
 for (i in 1:N) { 
   dists <- pdist((xyz[i,]), (xyz_fit[i,])) 
   out[i,] <- dists@dist
-  }
+}
 str(out)
 out <- as.numeric(unlist(out))
 sprintf("Standard deviation of resid. %.2f",sd(out))
