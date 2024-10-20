@@ -1,36 +1,39 @@
-
+# Load necessary libraries
+if (!require("pracma")) install.packages("pracma", dependencies = TRUE)
+if (!require("MASS")) install.packages("MASS", dependencies = TRUE)
 library(pracma)
 library(MASS)
 
-# Fitting the sine function by a polynomial
-x <- seq(0, pi, length.out=25)
+# Generate data points for fitting the sine function
+x <- seq(0, pi, length.out = 25)
 y <- sin(x)
 
-# Add noise
-x <- c(x,0.5)
+# Add noise to the data
+x <- c(x, 0.5)
 x <- sort(x)
 y <- c(y, 0.9)
 
+# Fit a 3rd-degree polynomial to the noisy sine data
 p <- polyfit(x, y, 3)
 
-## Plot sin and fitted polynomial
-   plot(x, y, type="p")
-   yf <- polyval(p, x)
-   lines(x, yf, col="red")
-   grid()## End(Not run)
-  
-#Linear regression Fit
+# Plot the original data points and the polynomial fit
+plot(x, y, type = "p", main = "Polynomial Fitting Comparison",
+     xlab = "x", ylab = "y", pch = 16)
+yf <- polyval(p, x)
+lines(x, yf, col = "red", lwd = 2)
+grid()
 
-   lm.fit <- lm(y~ poly(x,6))
-  lines(x, lm.fit$fitted.values, col="green")
+# Linear regression fit using a 6th-degree polynomial
+lm_fit <- lm(y ~ poly(x, 6))
+lines(x, lm_fit$fitted.values, col = "green", lwd = 2)
 
-  
-   #Robust Poly Fit
+# Robust polynomial fit using a 3rd-degree polynomial
+r_fit <- rlm(y ~ poly(x, 3))
+lines(x, r_fit$fitted.values, col = "black", lwd = 2, lty = 2)
 
-  r.fit <- rlm(y~poly(x,3))
-  summary(r.fit) 
-  lines(x, r.fit$fitted.values, col="black", lwd=2, lty=2)
+# Display a summary of the robust fit
+summary(r_fit)
 
-  legend(x="bottomright", c("PolyFit 3", "LmFit 6", "RobustFit 3"), col=c("red", "green", "black"), lty=c(1,1,2))## End(Not run)
-  
-  
+# Add a legend to distinguish the different fits
+legend("bottomright", legend = c("PolyFit 3rd Degree", "LmFit 6th Degree", "RobustFit 3rd Degree"),
+       col = c("red", "green", "black"), lty = c(1, 1, 2), lwd = 2, bty = "n")
