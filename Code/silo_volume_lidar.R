@@ -1,6 +1,7 @@
 # ---- Silo 3D Surface Volume Analysis Script ----
-# This script simulates a silo with a heaped surface, computes volumetric stats,
-# and visualizes: 1) the top surface, 2) silo walls/base, and 3) a reverse cone.
+# Simulates a silo with a heaped surface, computes volumetric stats,
+# visualizes the 3D surface, cylinder, base, reverse cone, 
+# and marks min/max surface points (both on grid and original data).
 
 # --- Load Required Packages ---
 if (!require("geometry")) install.packages("geometry")
@@ -17,12 +18,10 @@ radius <- 4                  # Silo radius (m)
 silo_height <- 6             # Silo total height (m) from base to roof
 
 # --- Simulate Surface Points (LIDAR/Point Cloud) ---
-# Generate n points uniformly on a disk (the silo base), then assign heights z
 theta <- runif(n, 0, 2*pi)
 r <- sqrt(runif(n, 0, 1)) * radius
 x <- r * cos(theta)
 y <- r * sin(theta)
-# Heaped surface: z = 5 - (x^2 + y^2) / (radius^2) + noise
 z <- 5 - (x^2 + y^2) / (radius^2) + rnorm(n, 0, 0.1)
 points_df <- data.frame(x, y, z)
 
@@ -37,7 +36,7 @@ yg <- seq(-radius, radius, by = grid_res)
 grd <- interp::interp(points_df$x, points_df$y, points_df$z, xo = xg, yo = yg)
 height_mat <- grd$z
 
-# --- Mask Grid to Silo Circle (mathematical background: area integration) ---
+# --- Mask Grid to Silo Circle ---
 grid_x <- matrix(rep(grd$x, each=length(grd$y)), nrow=length(grd$y))
 grid_y <- matrix(rep(grd$y, length(grd$x)), nrow=length(grd$y), byrow=FALSE)
 mask <- (grid_x^2 + grid_y^2) <= radius^2
@@ -45,53 +44,46 @@ valid_heights <- height_mat[mask]
 cell_area <- grid_res^2
 
 # --- Surface Statistics ---
-surface_min <- min(valid_heights, na.rm = TRUE)      # Lowest surface point
-surface_max <- max(valid_heights, na.rm = TRUE)      # Highest surface point
-surface_mean <- mean(valid_heights, na.rm = TRUE)    # Average surface height
-surface_sd <- sd(valid_heights, na.rm = TRUE)        # Surface roughness (stddev)
-
-# --- Mathematical background: Surface Volume Calculation ---
-# Approximates integral over the surface:
-# V_surface = sum_over_grid( cell_area * height )
+surface_min <- min(valid_heights, na.rm = TRUE)
+surface_max <- max(valid_heights, na.rm = TRUE)
+surface_mean <- mean(valid_heights, na.rm = TRUE)
+surface_sd <- sd(valid_heights, na.rm = TRUE)
 surface_volume <- sum(valid_heights, na.rm = TRUE) * cell_area
 
-# --- Silo Total Cylinder Volume (for reference) ---
-# V_cylinder = pi * r^2 * h
+# --- Silo volumes ---
 silo_cylinder_volume <- pi * radius^2 * silo_height
-
-# --- Reverse Cone Volume (mathematical background) ---
-# V_cone = (1/3) * pi * r^2 * h
 reverse_cone_vol <- (1/3) * pi * reverse_cone_radius^2 * reverse_cone_depth
-
-# --- Volume below surface (if min(z) > 0, material from base to min surface) ---
-# Usually zero for realistic heap, but reported for completeness
-# V_bottom_slice = pi * r^2 * max(0, min(surface))
 bottom_slice_volume <- pi * radius^2 * max(0, surface_min)
-
-# --- Total Filled Volume Calculation ---
-# Surface volume + reverse cone volume
 total_filled_volume <- surface_volume + reverse_cone_vol
-
-# --- Empty Space (Air) Above the Material ---
 empty_space_volume <- silo_cylinder_volume - total_filled_volume
 
 # --- Prepare 3D Color Map for Surface ---
 height_mat_plot <- height_mat
 height_mat_plot[is.na(height_mat_plot)] <- min(height_mat, na.rm = TRUE)
 ncol <- 100
-colmap <- terrain.colors(ncol)
+colmap <- rainbow(ncol) # or terrain.colors(ncol)
 zcol <- colmap[cut(height_mat_plot, breaks = ncol, include.lowest = TRUE)]
 
 # === 3D Visualization Section ===
 open3d()
 bg3d(color = "white")
 
-# 1. Plot the interpolated surface (with RGB/terrain colors)
+# 1. Plot the interpolated colored surface
 persp3d(grd$x, grd$y, height_mat_plot,
         col = zcol, xlab = "X (m)", ylab = "Y (m)", zlab = "Height (m)",
         main = "Silo with Cylinder and Reverse Cone", aspect = c(1, 1, 0.5), alpha = 0.9, add = FALSE)
 
-# 2. Plot the silo wall (cylinder) and base
+# --- (B) Min/max markers from original point cloud (recommended for reporting) ---
+ix_min <- which.min(points_df$z)
+ix_max <- which.max(points_df$z)
+spheres3d(points_df$x[ix_min], points_df$y[ix_min], points_df$z[ix_min], radius=0.18, color="navy")
+text3d(points_df$x[ix_min], points_df$y[ix_min], points_df$z[ix_min], 
+       texts = sprintf("Min: %.2f m", points_df$z[ix_min]), adj = c(1,1), col="navy", cex=1.4)
+spheres3d(points_df$x[ix_max], points_df$y[ix_max], points_df$z[ix_max], radius=0.18, color="darkred")
+text3d(points_df$x[ix_max], points_df$y[ix_max], points_df$z[ix_max], 
+       texts = sprintf("Max: %.2f m", points_df$z[ix_max]), adj = c(1,1), col="darkred", cex=1.4)
+
+# 2. Plot the silo wall and base
 cylinder_segments <- 100
 cylinder_theta <- seq(0, 2*pi, length.out = cylinder_segments)
 for(i in 1:(length(cylinder_theta)-1)) {
@@ -129,6 +121,15 @@ for(i in 1:(length(cone_theta)-1)) {
 axes3d()
 title3d(xlab = "X (m)", ylab = "Y (m)", zlab = "Height (m)")
 
+# --- ADD COLOR LEGEND FOR SURFACE HEIGHT ---
+# We'll use a discrete legend3d that matches the zcol color map
+n_legend <- 8
+breaks_legend <- seq(surface_min, surface_max, length.out = n_legend)
+legend_colors <- colmap[cut(breaks_legend, breaks = seq(surface_min, surface_max, length.out = ncol+1), labels = FALSE, include.lowest = TRUE)]
+
+legend_labels <- sprintf("%.2f", breaks_legend)
+legend3d("topright", legend = legend_labels, fill = legend_colors, cex = 1.0, inset = c(0.02), title = "Surface Height (m)", bty = "n")
+
 # === Print All Statistics and Mathematical Formulas ===
 cat("==== Silo & Surface Statistics ====\n")
 cat(sprintf("Silo radius (r): %.2f m\n", radius))
@@ -138,8 +139,10 @@ cat(sprintf("Reverse cone radius (r): %.2f m\n", reverse_cone_radius))
 cat(sprintf("Reverse cone depth (h): %.2f m\n", reverse_cone_depth))
 cat(sprintf("Reverse cone volume (V_cone = (1/3) * pi * r^2 * h): %.2f m3\n", reverse_cone_vol))
 cat("\n--- Surface (top of material) ---\n")
-cat(sprintf("Min surface height: %.2f m\n", surface_min))
-cat(sprintf("Max surface height: %.2f m\n", surface_max))
+cat(sprintf("Min surface height (grid): %.2f m\n", surface_min))
+cat(sprintf("Max surface height (grid): %.2f m\n", surface_max))
+cat(sprintf("Min height (raw): %.2f m\n", points_df$z[ix_min]))
+cat(sprintf("Max height (raw): %.2f m\n", points_df$z[ix_max]))
 cat(sprintf("Mean surface height: %.2f m\n", surface_mean))
 cat(sprintf("StdDev surface height: %.2f m\n", surface_sd))
 cat(sprintf("Surface volume above z=0 (V_surface = sum grid cell_area * h): %.2f m3\n", surface_volume))
