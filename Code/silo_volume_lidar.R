@@ -1,7 +1,8 @@
 # ---- Silo 3D Surface Volume Analysis Script ----
 # Simulates a silo with a heaped surface, computes volumetric stats,
 # visualizes the 3D surface, cylinder, base, reverse cone, 
-# and marks min/max surface points (both on grid and original data).
+# and marks min/max surface points (on original data).
+# Now includes engineering warnings for nearly full and below-base conditions.
 
 # --- Load Required Packages ---
 if (!require("geometry")) install.packages("geometry")
@@ -22,7 +23,7 @@ theta <- runif(n, 0, 2*pi)
 r <- sqrt(runif(n, 0, 1)) * radius
 x <- r * cos(theta)
 y <- r * sin(theta)
-z <- 5 - (x^2 + y^2) / (radius^2) + rnorm(n, 0, 0.1)
+z <- 3 - (x^2 + y^2) / (radius^2) + rnorm(n, 0, 0.1)
 points_df <- data.frame(x, y, z)
 
 # --- Reverse Cone Parameters ---
@@ -43,7 +44,7 @@ mask <- (grid_x^2 + grid_y^2) <= radius^2
 valid_heights <- height_mat[mask]
 cell_area <- grid_res^2
 
-# --- Surface Statistics ---
+# --- Surface Statistics (from grid) ---
 surface_min <- min(valid_heights, na.rm = TRUE)
 surface_max <- max(valid_heights, na.rm = TRUE)
 surface_mean <- mean(valid_heights, na.rm = TRUE)
@@ -55,7 +56,8 @@ silo_cylinder_volume <- pi * radius^2 * silo_height
 reverse_cone_vol <- (1/3) * pi * reverse_cone_radius^2 * reverse_cone_depth
 bottom_slice_volume <- pi * radius^2 * max(0, surface_min)
 total_filled_volume <- surface_volume + reverse_cone_vol
-empty_space_volume <- silo_cylinder_volume - total_filled_volume
+empty_space_volume <- silo_cylinder_volume - surface_volume
+full_capacity <- silo_cylinder_volume + reverse_cone_vol
 
 # --- Prepare 3D Color Map for Surface ---
 height_mat_plot <- height_mat
@@ -73,7 +75,7 @@ persp3d(grd$x, grd$y, height_mat_plot,
         col = zcol, xlab = "X (m)", ylab = "Y (m)", zlab = "Height (m)",
         main = "Silo with Cylinder and Reverse Cone", aspect = c(1, 1, 0.5), alpha = 0.9, add = FALSE)
 
-# --- (B) Min/max markers from original point cloud (recommended for reporting) ---
+# --- Min/max markers from original point cloud (recommended for reporting) ---
 ix_min <- which.min(points_df$z)
 ix_max <- which.max(points_df$z)
 spheres3d(points_df$x[ix_min], points_df$y[ix_min], points_df$z[ix_min], radius=0.18, color="navy")
@@ -122,11 +124,9 @@ axes3d()
 title3d(xlab = "X (m)", ylab = "Y (m)", zlab = "Height (m)")
 
 # --- ADD COLOR LEGEND FOR SURFACE HEIGHT ---
-# We'll use a discrete legend3d that matches the zcol color map
 n_legend <- 8
 breaks_legend <- seq(surface_min, surface_max, length.out = n_legend)
 legend_colors <- colmap[cut(breaks_legend, breaks = seq(surface_min, surface_max, length.out = ncol+1), labels = FALSE, include.lowest = TRUE)]
-
 legend_labels <- sprintf("%.2f", breaks_legend)
 legend3d("topright", legend = legend_labels, fill = legend_colors, cex = 1.0, inset = c(0.02), title = "Surface Height (m)", bty = "n")
 
@@ -134,7 +134,7 @@ legend3d("topright", legend = legend_labels, fill = legend_colors, cex = 1.0, in
 cat("==== Silo & Surface Statistics ====\n")
 cat(sprintf("Silo radius (r): %.2f m\n", radius))
 cat(sprintf("Silo height (h): %.2f m\n", silo_height))
-cat(sprintf("Silo total capacity (V_cylinder = pi * r^2 * h): %.2f m3\n", silo_cylinder_volume))
+cat(sprintf("Silo total capacity: %.2f m\n ", full_capacity))
 cat(sprintf("Reverse cone radius (r): %.2f m\n", reverse_cone_radius))
 cat(sprintf("Reverse cone depth (h): %.2f m\n", reverse_cone_depth))
 cat(sprintf("Reverse cone volume (V_cone = (1/3) * pi * r^2 * h): %.2f m3\n", reverse_cone_vol))
@@ -150,5 +150,20 @@ cat(sprintf("Volume below min surface (bottom slice, V = pi * r^2 * z_min): %.2f
 cat("\n--- Totals ---\n")
 cat(sprintf("Total filled volume (surface + cone): %.2f m3\n", total_filled_volume))
 cat(sprintf("Empty space (to full): %.2f m3\n", empty_space_volume))
-cat(sprintf("Fill percentage: %.2f %%\n", 100 * total_filled_volume / silo_cylinder_volume))
+cat(sprintf("Fill percentage: %.2f %%\n", 100 * total_filled_volume / full_capacity))
 cat("===================================\n")
+
+# --- ENGINEERING WARNINGS BASED ON SURFACE HEIGHTS ---
+# 1. Max surface height close to top of silo
+distance_to_roof <- silo_height - surface_max
+if (distance_to_roof < 0.5) {
+  cat(sprintf("\n*** WARNING: Maximum surface is within %.2f m of silo roof (nearly full: max surface = %.2f m, silo height = %.2f m) ***\n",
+              distance_to_roof, surface_max, silo_height))
+  warning(sprintf("Maximum surface is within %.2f m of silo roof (max=%.2f, silo height=%.2f)",
+                  distance_to_roof, surface_max, silo_height))
+}
+# 2. Any surface point below base
+if (surface_min < 0) {
+  cat(sprintf("\n*** WARNING: Minimum surface height is BELOW THE BASE! (min surface = %.2f m) ***\n", surface_min))
+  warning(sprintf("Minimum surface height is BELOW THE BASE! (min surface = %.2f m)", surface_min))
+}
