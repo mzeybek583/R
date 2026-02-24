@@ -94,9 +94,9 @@ ui <- fluidPage(
         style = "font-size: 16px;",
         helpText("Boylam/enlem girin. N cubic enterpolasyonlu yüzeyden alınır. h girerseniz H = h - N hesaplanır.")
       ),
-      numericInput("lon", "Boylam (lon, °):", value = 32.0, min = 24, max = 46, step = 0.0001),
-      numericInput("lat", "Enlem (lat, °):",  value = 39.0, min = 35, max = 43, step = 0.0001),
-      numericInput("h",   "Elipsoidal yükseklik h (m):", value = NA, step = 0.001),
+      numericInput("lon", "Boylam (lon, °):", value = 32.717813, min = 24, max = 46, step = 0.0001),
+      numericInput("lat", "Enlem (lat, °):",  value = 37.281586, min = 35, max = 43, step = 0.0001),
+      numericInput("h",   "Elipsoidal yükseklik h (m):", value = 1100, step = 0.001),
       sliderInput("factor", "Yüzey çözünürlüğü (FACTOR):", min = 1, max = 6, value = 3, step = 1),
       sliderInput("ring", "İstatistik komşuluğu (ring):", min = 1, max = 5, value = 2, step = 1),
       actionButton("calc", "Hesapla (N ve H)"),
